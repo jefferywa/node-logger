@@ -1,4 +1,4 @@
 module.exports = {
 	Timer: require('./lib/timer'),
-	LoggerFactory: require('./lib/logger/old'),
+	LoggerFactory: require('./lib/logger'),
 };
