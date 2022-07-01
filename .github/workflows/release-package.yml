@@ -1,4 +1,4 @@
-name: node-logger
+name: Node.js Package
 
 on:
   release:

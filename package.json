@@ -13,6 +13,9 @@
     "type": "git",
     "url": "git@github.com:Jefferywa/node-logger.git"
   },
+  "publishConfig": {
+    "@jefferywa:registry": "https://npm.pkg.github.com"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
