@@ -1,5 +1,5 @@
 {
-  "name": "node-logger",
+  "name": "@jefferywa/node-logger",
   "version": "1.0.8",
   "description": "Banyan runtime logger with output to stdout and files in JSON format",
   "main": "index.js",
@@ -14,7 +14,7 @@
     "url": "git@github.com:Jefferywa/node-logger.git"
   },
   "publishConfig": {
-    "@jefferywa:registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com/jefferywa"
   },
   "husky": {
     "hooks": {
