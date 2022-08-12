@@ -1,4 +1,4 @@
-import fs from 'fs';
+import * as fs from 'fs';
 
 import { Meta } from '../../interfaces/meta.interface';
 import { Settings } from '../../interfaces/settings.interface';
