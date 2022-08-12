@@ -29,7 +29,7 @@ export class NodeLogger extends Bunyan {
   public middleware: (req, res, next) => void;
   public middlewareSuccessfulShortResponse: (req, res, next) => void;
   public middlewareSuccessfulResponse: (req, res, next) => void;
-  private middlewareExceptionResponse: (err, req, res, next) => void;
+  public middlewareExceptionResponse: (err, req, res, next) => void;
 
   constructor(settings: Settings) {
     super(NodeLogger._init(settings));
