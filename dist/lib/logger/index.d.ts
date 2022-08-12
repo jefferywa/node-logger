@@ -13,7 +13,7 @@ export declare class NodeLogger extends Bunyan {
     middleware: (req: any, res: any, next: any) => void;
     middlewareSuccessfulShortResponse: (req: any, res: any, next: any) => void;
     middlewareSuccessfulResponse: (req: any, res: any, next: any) => void;
-    private middlewareExceptionResponse;
+    middlewareExceptionResponse: (err: any, req: any, res: any, next: any) => void;
     constructor(settings: Settings);
     static get Serializers(): {
         header: (headers: any) => any;
