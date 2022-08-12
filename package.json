@@ -1,6 +1,6 @@
 {
   "name": "@jefferywa/node-logger",
-  "version": "1.1.0-beta.4",
+  "version": "1.1.0-beta.5",
   "description": "Banyan runtime logger with output to stdout and files in JSON format",
   "main": "index.ts",
   "scripts": {
