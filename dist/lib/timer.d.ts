@@ -1,4 +1,3 @@
-export = Timer;
-declare class Timer {
+export declare class Timer {
     static hrtimeToMs(hr: number[]): number;
 }

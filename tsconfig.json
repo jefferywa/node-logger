@@ -9,6 +9,7 @@
     "target": "es2017",
     "sourceMap": true,
     "allowJs": true,
+    "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -16,7 +17,10 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "typeRoots": []
+    "typeRoots": [],
+    "types": [
+      "node",
+    ]
   },
   "exclude": ["./node_modules", "./dist"]
 }
