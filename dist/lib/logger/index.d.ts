@@ -28,7 +28,7 @@ export declare class NodeLogger extends Bunyan {
             stack: any;
         };
     };
-    json(args: any, rest: string): void;
+    json(args: any, ...rest: any): void;
     log(arg: any, ...rest: any): void;
     static create(settings: any): NodeLogger;
     canSend(): boolean;

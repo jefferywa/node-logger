@@ -50,7 +50,7 @@ class NodeLogger extends Bunyan {
             },
         };
     }
-    json(args, rest) {
+    json(args, ...rest) {
         if (!this._settings.isJSON) {
             return;
         }

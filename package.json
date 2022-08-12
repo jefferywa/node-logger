@@ -1,8 +1,8 @@
 {
   "name": "@jefferywa/node-logger",
-  "version": "1.1.0-beta.3",
+  "version": "1.1.0-beta.4",
   "description": "Banyan runtime logger with output to stdout and files in JSON format",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "format": "prettier '{.,lib}/**/*.ts' --write",
     "lint": "eslint '{.,lib}/**/*.ts' --fix",
@@ -13,25 +13,10 @@
     "type": "git",
     "url": "git@github.com:Jefferywa/node-logger.git"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "post-commit": "git update-index --again"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "npm run flint",
-      "git add ."
-    ]
-  },
   "dependencies": {
     "async-local-storage": "2.3.1",
     "bunyan": "1.8.15",
     "uuid": "8.3.2"
-  },
-  "peerDependencies": {
-    "@types/bunyan": "1.8.8"
   },
   "devDependencies": {
     "@types/bunyan": "1.8.8",
