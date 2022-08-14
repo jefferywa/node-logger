@@ -3,6 +3,7 @@ Simple runtime logging library based on [bunyan](https://www.npmjs.com/package/b
 
 [![Version npm](https://img.shields.io/badge/npm-v2.0.0-blue)](https://www.npmjs.com/package/@jefferywa/node-logger)
 [![Version git](https://img.shields.io/badge/github-code-brighthgreen)](https://github.com/jefferywa/node-logger)
+[![Version git](https://img.shields.io/badge/gitgub-issues-red)](https://github.com/jefferywa/node-logger/issues)
 
 [![NPM](https://nodei.co/npm/@jefferywa/node-logger.png?downloads=true&compact=true)](https://nodei.co/npm/%40jefferywa%2Fnode-logger?)
 
