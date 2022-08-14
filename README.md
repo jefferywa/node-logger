@@ -68,7 +68,6 @@ const logger = winston.createLogger({
 });
 ```
 
-
 ### Serializers
 Configuration object containing functions that you can use in logging mods such as info and error
 
