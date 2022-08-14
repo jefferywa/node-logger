@@ -10,7 +10,6 @@ export class BaseStream {
   public static get Levels(): Record<number, string> {
     return {
       70: 'Z',
-      60: 'C',
       50: 'E',
       40: 'W',
       30: 'I',
