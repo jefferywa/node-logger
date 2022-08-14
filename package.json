@@ -9,7 +9,6 @@
     "format": "prettier '{.,lib}/**/*.ts' --write",
     "lint": "eslint '{.,lib}/**/*.ts' --fix",
     "flint": "npm run format && npm run lint",
-    "docs": "./node_modules/.bin/jsdoc --configure .jsdocrc.js --verbose",
     "prepublish": "tsc"
   },
   "repository": {
