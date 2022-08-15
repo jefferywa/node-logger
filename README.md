@@ -127,7 +127,6 @@ logger.warn('Your warning log string'); // For logging warnings
 ```
 
 ## Installation
-
 ``` bash
 npm install @jefferywa/node-logger
 ```
@@ -135,5 +134,15 @@ npm install @jefferywa/node-logger
 ``` bash
 yarn add @jefferywa/node-logger
 ```
+
+### TypeScript support
+``` bash
+npm install @types/bunyan
+```
+
+``` bash
+yarn add @types/bunyan
+```
+
 
 #### Author: [JefferyWa (Vsevolod Golubinov)](https://github.com/jefferywa)
