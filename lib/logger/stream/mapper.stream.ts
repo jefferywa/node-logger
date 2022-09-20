@@ -12,8 +12,8 @@ export class MapperStream {
   protected readonly _options: Settings;
 
   constructor(meta: Meta, options: Settings) {
-    this._meta = meta;
     this._options = options;
+    this._meta = meta;
   }
 
   protected _map(record: any): any {

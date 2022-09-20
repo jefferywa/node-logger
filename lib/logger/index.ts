@@ -8,6 +8,7 @@ import { TrimStream } from './stream/trim.stream';
 import { MapperStream } from './stream/mapper.stream';
 import { BaseStream } from './stream/base.stream';
 import { Timer } from '../timer';
+import { GelfStream } from './stream/gelf.stream';
 
 const HEADER_RM_REGEX = /(rm=).+?(;|$)/g;
 const HEADER_SID_REGEX = /(sid=).+?(;|$)/g;
@@ -23,23 +24,38 @@ export class NodeLogger extends Bunyan {
   protected static readonly DEFAULT_STREAM_TYPE = 'raw';
   protected static readonly DEFAULT_LEVEL = 'INFO';
 
-  private readonly _meta: Meta;
-  private readonly _settings: Settings;
+  protected readonly _settings: Settings;
+  protected readonly _meta: Meta;
 
   public middleware: (req, res, next) => void;
   public middlewareSuccessfulShortResponse: (req, res, next) => void;
   public middlewareSuccessfulResponse: (req, res, next) => void;
   public middlewareExceptionResponse: (err, req, res, next) => void;
 
-  constructor(settings: Settings) {
-    super(NodeLogger._init(settings));
+  constructor(settingsOrParent: Settings | NodeLogger, options?: object) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    super(NodeLogger._init(settingsOrParent), options);
 
-    this._settings = settings;
-    if (settings instanceof NodeLogger) {
-      this._settings = settings._extractSettings;
+    if (settingsOrParent instanceof NodeLogger) {
+      this._settings = settingsOrParent.settings;
+    } else {
+      this._settings = settingsOrParent;
     }
 
     this._meta = NodeLogger._createMeta();
+  }
+
+  get name(): string {
+    return this._settings.name;
+  }
+
+  get type(): string {
+    return this._settings.type;
+  }
+
+  get settings(): Settings {
+    return this._settings;
   }
 
   static get Serializers() {
@@ -107,11 +123,17 @@ export class NodeLogger extends Bunyan {
     this.json({ stringData: args }, arg);
   }
 
-  static create(settings) {
-    const logger = new NodeLogger(settings);
+  createChild(meta: object): NodeLogger {
+    this.setLogMeta(meta);
+    return <NodeLogger>this.child({ __meta: meta }, false);
+  }
+
+  static create(settings: Settings): NodeLogger {
+    const logger = new NodeLogger(settings).createChild({
+      processId: uuidV4(),
+    });
 
     logger.level(settings.level);
-
     logger.middleware = (req, res, next) => {
       let requestId = req.headers['x-request-id'];
       if (!requestId) {
@@ -122,10 +144,9 @@ export class NodeLogger extends Bunyan {
 
       const meta = { requestId };
 
-      logger._setLogMeta(meta);
       req.requestId = requestId;
 
-      req.log = logger.child({ __meta: meta, className: 'server' }, false);
+      req.log = logger.createChild(meta);
       req.log.json({ req }, this.INCOMING_REQUEST_POSTFIX);
 
       next();
@@ -214,7 +235,11 @@ export class NodeLogger extends Bunyan {
     return false;
   }
 
-  static _init(settings: Settings): LoggerOptions {
+  static _init(settings: Settings | NodeLogger): LoggerOptions | NodeLogger {
+    if (settings instanceof NodeLogger) {
+      return settings;
+    }
+
     const meta = this._createMeta();
     const streamList = [];
 
@@ -253,27 +278,27 @@ export class NodeLogger extends Bunyan {
     const emptyMetaObject = {};
 
     return {
-      get: (key: string) => emptyMetaObject,
-      set: (key: string, value: any) => emptyMetaObject,
+      get: (key: string) => emptyMetaObject[key],
+      set: (key: string, value: any) => (emptyMetaObject[key] = value),
     };
   }
 
   private static _createStream(
     settings: Settings,
     meta: Meta,
-  ): TrimStream | MapperStream {
+  ): TrimStream | MapperStream | GelfStream {
     if (settings.isTrim) {
       return new TrimStream(meta, settings);
+    }
+
+    if (settings.isGelf && settings.gelfConfig) {
+      return new GelfStream(meta, settings);
     }
 
     return new MapperStream(meta, settings);
   }
 
-  private get _extractSettings(): Settings {
-    return this._settings;
-  }
-
-  private _setLogMeta(meta: any): void {
+  public setLogMeta(meta: object): void {
     this._meta.set('log-meta', meta);
   }
 }

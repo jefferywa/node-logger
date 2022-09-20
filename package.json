@@ -1,6 +1,6 @@
 {
   "name": "@jefferywa/node-logger",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Banyan runtime logger with output to stdout and files in JSON format",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,17 +17,18 @@
   },
   "dependencies": {
     "bunyan": "1.8.15",
+    "gelf": "2.0.1",
     "uuid": "8.3.2"
   },
   "devDependencies": {
     "@types/bunyan": "1.8.8",
+    "@typescript-eslint/eslint-plugin": "5.0.0",
+    "@typescript-eslint/parser": "5.0.0",
     "eslint": "8.0.1",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-prettier": "4.0.0",
     "prettier": "2.0.5",
-    "typescript": "4.3.5",
-    "@typescript-eslint/eslint-plugin": "5.0.0",
-    "@typescript-eslint/parser": "5.0.0"
+    "typescript": "4.3.5"
   },
   "keywords": [
     "logger",

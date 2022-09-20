@@ -1,7 +1,7 @@
 import { Meta } from '../../interfaces/meta.interface';
 
 export class BaseStream {
-  private readonly _meta: Meta;
+  protected readonly _meta: Meta;
 
   constructor(meta: Meta) {
     this._meta = meta;
