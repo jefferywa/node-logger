@@ -40,7 +40,7 @@ const levels = {
 You get started by creating a logger using Logger.create:
 
 ```typescript
-const logger = winston.createLogger({
+const logger = Logger.create({
   name: 'EXAMPLE_PROJECT_NAME', // - Write your project name
   type: 'backend', // - Write your project type, for example `backend` or `api` 
   level: 'INFO', // - Write default logger level, in default settings it is INFO
@@ -63,9 +63,17 @@ const logger = winston.createLogger({
     ...
   },
   maxMessageLength: 256, // - Write maximum log row length, this setting worked with field `isTrim`
-  isTrim: true, // - If set to `true`, will enable the `Trim` mode using the `maxMessageLength` parameter
+  isTrim: true, // - If set to `true`, will enable the `Trim` mode using the `maxMessageLength` parameter, this setting working with setting 'isMapper=true' 
   isMapper: false, // If set to `true`, Mapper mode will be enabled, for a more detailed listing of the value in the entry log line
   isJSON: true, //  If set to `true`, `logger.json` method support will be enabled, by default `false`
+  isGelf: false, // If set to `true`, logs will be sent to graylog via gelf, this setting working with setting 'isMapper=true' 
+  gelfConfig: {
+    graylogPort: 12201,
+    graylogHostname: '127.0.0.1',
+    connection: 'wan',
+    maxChunkSizeWan: 1420,
+    maxChunkSizeLan: 8154
+  }
 });
 ```
 
