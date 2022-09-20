@@ -1,5 +1,5 @@
 import * as Bunyan from 'bunyan';
-import { LoggerOptions } from 'bunyan';
+import { LoggerOptions, LogLevel } from 'bunyan';
 
 import { v4 as uuidV4 } from 'uuid';
 import { Meta } from '../interfaces/meta.interface';
@@ -133,7 +133,7 @@ export class NodeLogger extends Bunyan {
       processId: uuidV4(),
     });
 
-    logger.level(settings.level);
+    logger.level(settings.level as LogLevel);
     logger.middleware = (req, res, next) => {
       let requestId = req.headers['x-request-id'];
       if (!requestId) {
