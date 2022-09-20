@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { Meta } from '../../interfaces/meta.interface';
-import { Settings } from '../../interfaces/settings.interface';
+import { LoggerSettings } from '../../interfaces/settings.interface';
 
 import { BaseStream } from './base.stream';
 
@@ -9,9 +9,9 @@ export class MapperStream {
   private readonly DEFAULT_WRITE_MODE = 'STDOUT';
 
   protected readonly _meta: Meta;
-  protected readonly _options: Settings;
+  protected readonly _options: LoggerSettings;
 
-  constructor(meta: Meta, options: Settings) {
+  constructor(meta: Meta, options: LoggerSettings) {
     this._options = options;
     this._meta = meta;
   }

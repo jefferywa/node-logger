@@ -3,7 +3,7 @@ import { LoggerOptions } from 'bunyan';
 
 import { v4 as uuidV4 } from 'uuid';
 import { Meta } from '../interfaces/meta.interface';
-import { Settings } from '../interfaces/settings.interface';
+import { LoggerSettings } from '../interfaces/settings.interface';
 import { TrimStream } from './stream/trim.stream';
 import { MapperStream } from './stream/mapper.stream';
 import { BaseStream } from './stream/base.stream';
@@ -24,7 +24,7 @@ export class NodeLogger extends Bunyan {
   protected static readonly DEFAULT_STREAM_TYPE = 'raw';
   protected static readonly DEFAULT_LEVEL = 'INFO';
 
-  protected readonly _settings: Settings;
+  protected readonly _settings: LoggerSettings;
   protected readonly _meta: Meta;
 
   public middleware: (req, res, next) => void;
@@ -32,7 +32,7 @@ export class NodeLogger extends Bunyan {
   public middlewareSuccessfulResponse: (req, res, next) => void;
   public middlewareExceptionResponse: (err, req, res, next) => void;
 
-  constructor(settingsOrParent: Settings | NodeLogger, options?: object) {
+  constructor(settingsOrParent: LoggerSettings | NodeLogger, options?: object) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     super(NodeLogger._init(settingsOrParent), options);
@@ -54,7 +54,7 @@ export class NodeLogger extends Bunyan {
     return this._settings.type;
   }
 
-  get settings(): Settings {
+  get settings(): LoggerSettings {
     return this._settings;
   }
 
@@ -128,7 +128,7 @@ export class NodeLogger extends Bunyan {
     return <NodeLogger>this.child({ __meta: meta }, false);
   }
 
-  static create(settings: Settings): NodeLogger {
+  static create(settings: LoggerSettings): NodeLogger {
     const logger = new NodeLogger(settings).createChild({
       processId: uuidV4(),
     });
@@ -235,7 +235,9 @@ export class NodeLogger extends Bunyan {
     return false;
   }
 
-  static _init(settings: Settings | NodeLogger): LoggerOptions | NodeLogger {
+  static _init(
+    settings: LoggerSettings | NodeLogger,
+  ): LoggerOptions | NodeLogger {
     if (settings instanceof NodeLogger) {
       return settings;
     }
@@ -284,7 +286,7 @@ export class NodeLogger extends Bunyan {
   }
 
   private static _createStream(
-    settings: Settings,
+    settings: LoggerSettings,
     meta: Meta,
   ): TrimStream | MapperStream | GelfStream {
     if (settings.isTrim) {

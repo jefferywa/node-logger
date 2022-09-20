@@ -1,18 +1,17 @@
 import * as Gelf from 'gelf';
 
-import { Settings } from '../../interfaces/settings.interface';
+import { LoggerSettings } from '../../interfaces/settings.interface';
 import { Meta } from '../../interfaces/meta.interface';
 
-import { MapperStream } from './mapper.stream';
 import { BaseStream } from './base.stream';
 
 export class GelfStream extends BaseStream {
   private readonly _gelf: Gelf;
 
-  protected readonly _options: Settings;
+  protected readonly _options: LoggerSettings;
   protected readonly _meta: Meta;
 
-  constructor(meta: Meta, options: Settings) {
+  constructor(meta: Meta, options: LoggerSettings) {
     super(meta);
 
     this._gelf = new Gelf(options.gelfConfig);

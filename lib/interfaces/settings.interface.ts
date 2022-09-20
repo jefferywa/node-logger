@@ -1,5 +1,3 @@
-import { LogLevelString } from 'bunyan';
-
 import { BaseStream } from '../logger/stream/base.stream';
 import { MapperStream } from '../logger/stream/mapper.stream';
 import { TrimStream } from '../logger/stream/trim.stream';
@@ -12,12 +10,12 @@ export interface GelfConfig {
   maxChunkSizeLan: number;
 }
 
-export interface Settings {
+export interface LoggerSettings {
   name: string;
   type: string;
   mode?: string;
   path?: string;
-  level: LogLevelString | number;
+  level: string | number;
   isTrim: boolean;
   isJSON: boolean;
   isGelf: boolean;

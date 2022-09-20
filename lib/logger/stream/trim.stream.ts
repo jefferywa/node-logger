@@ -1,5 +1,5 @@
 import { Meta } from '../../interfaces/meta.interface';
-import { Settings } from '../../interfaces/settings.interface';
+import { LoggerSettings } from '../../interfaces/settings.interface';
 
 import { BaseStream } from './base.stream';
 import { MapperStream } from './mapper.stream';
@@ -8,9 +8,9 @@ export class TrimStream extends MapperStream {
   private readonly DEFAULT_MAX_MESSAGE_LENGTH = 1024;
 
   protected readonly _meta: Meta;
-  protected readonly _options: Settings;
+  protected readonly _options: LoggerSettings;
 
-  constructor(meta: Meta, options: Settings) {
+  constructor(meta: Meta, options: LoggerSettings) {
     super(meta, options);
 
     this._meta = meta;
