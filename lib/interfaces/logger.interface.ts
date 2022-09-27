@@ -1,3 +1,4 @@
+import { LogLevelString } from 'bunyan';
 import { BaseStream } from '../logger/stream/base.stream';
 import { MapperStream } from '../logger/stream/mapper.stream';
 import { TrimStream } from '../logger/stream/trim.stream';
@@ -15,7 +16,7 @@ export interface LoggerSettings {
   type: string;
   mode?: string;
   path?: string;
-  level: string | number;
+  level: LoggerLevels;
   isTrim: boolean;
   isJSON: boolean;
   isGelf: boolean;
@@ -25,3 +26,9 @@ export interface LoggerSettings {
   serializers: object;
   streams?: (BaseStream | MapperStream | TrimStream)[];
 }
+
+export interface LoggerOptions {
+  [key: string]: any;
+}
+
+export type LoggerLevels = LogLevelString | Uppercase<LogLevelString> | number;

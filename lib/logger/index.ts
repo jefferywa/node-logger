@@ -1,9 +1,9 @@
 import * as Bunyan from 'bunyan';
-import { LoggerOptions, LogLevel } from 'bunyan';
+import { LogLevel } from 'bunyan';
 
 import { v4 as uuidV4 } from 'uuid';
 import { Meta } from '../interfaces/meta.interface';
-import { LoggerSettings } from '../interfaces/settings.interface';
+import { LoggerSettings, LoggerOptions } from '../interfaces/logger.interface';
 import { TrimStream } from './stream/trim.stream';
 import { MapperStream } from './stream/mapper.stream';
 import { BaseStream } from './stream/base.stream';
@@ -32,7 +32,10 @@ export class NodeLogger extends Bunyan {
   public middlewareSuccessfulResponse: (req, res, next) => void;
   public middlewareExceptionResponse: (err, req, res, next) => void;
 
-  constructor(settingsOrParent: LoggerSettings | NodeLogger, options?: object) {
+  constructor(
+    settingsOrParent: LoggerSettings | NodeLogger,
+    options?: LoggerOptions,
+  ) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     super(NodeLogger._init(settingsOrParent), options);
@@ -43,7 +46,7 @@ export class NodeLogger extends Bunyan {
       this._settings = settingsOrParent;
     }
 
-    this._meta = NodeLogger._createMeta();
+    this._meta = NodeLogger._initMeta();
   }
 
   get name(): string {
@@ -113,22 +116,26 @@ export class NodeLogger extends Bunyan {
   public log(arg: any, ...rest: any) {
     let args = { ...rest };
 
-    if (Array.isArray(rest)) {
-      const key = rest[0];
-      const value = rest[1];
+    if (!args) {
+      this.info(arg);
+    } else {
+      if (Array.isArray(rest)) {
+        const key = rest[0];
+        const value = rest[1];
 
-      args = { [key]: value };
+        args = { [key]: value };
+      }
+
+      this.json({ stringData: args }, arg);
     }
-
-    this.json({ stringData: args }, arg);
   }
 
-  createChild(meta: object): NodeLogger {
+  public createChild(meta: object): NodeLogger {
     this.setLogMeta(meta);
     return <NodeLogger>this.child({ __meta: meta }, false);
   }
 
-  static create(settings: LoggerSettings): NodeLogger {
+  public static create(settings: LoggerSettings): NodeLogger {
     const logger = new NodeLogger(settings).createChild({
       processId: uuidV4(),
     });
@@ -235,14 +242,18 @@ export class NodeLogger extends Bunyan {
     return false;
   }
 
-  static _init(
+  public setLogMeta(meta: object): void {
+    this._meta.set('log-meta', meta);
+  }
+
+  private static _init(
     settings: LoggerSettings | NodeLogger,
   ): LoggerOptions | NodeLogger {
     if (settings instanceof NodeLogger) {
       return settings;
     }
 
-    const meta = this._createMeta();
+    const meta = this._initMeta();
     const streamList = [];
 
     const level = settings.level || NodeLogger.DEFAULT_LEVEL;
@@ -276,7 +287,7 @@ export class NodeLogger extends Bunyan {
     };
   }
 
-  private static _createMeta(): Meta {
+  private static _initMeta(): Meta {
     const emptyMetaObject = {};
 
     return {
@@ -298,9 +309,5 @@ export class NodeLogger extends Bunyan {
     }
 
     return new MapperStream(meta, settings);
-  }
-
-  public setLogMeta(meta: object): void {
-    this._meta.set('log-meta', meta);
   }
 }

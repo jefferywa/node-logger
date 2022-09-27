@@ -1,6 +1,6 @@
 import * as Gelf from 'gelf';
 
-import { LoggerSettings } from '../../interfaces/settings.interface';
+import { LoggerSettings } from '../../interfaces/logger.interface';
 import { Meta } from '../../interfaces/meta.interface';
 
 import { BaseStream } from './base.stream';

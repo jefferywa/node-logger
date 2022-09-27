@@ -1,5 +1,5 @@
 import { Meta } from '../../interfaces/meta.interface';
-import { LoggerSettings } from '../../interfaces/settings.interface';
+import { LoggerSettings } from '../../interfaces/logger.interface';
 
 import { BaseStream } from './base.stream';
 import { MapperStream } from './mapper.stream';
