@@ -113,21 +113,8 @@ export class NodeLogger extends Bunyan {
     this.info(concatArgs[0], concatArgs[1]);
   }
 
-  public log(arg: any, ...rest: any) {
-    let args = { ...rest };
-
-    if (!args) {
-      this.info(arg);
-    } else {
-      if (Array.isArray(rest)) {
-        const key = rest[0];
-        const value = rest[1];
-
-        args = { [key]: value };
-      }
-
-      this.json({ stringData: args }, arg);
-    }
+  public log(arg: any) {
+    this.info(arg);
   }
 
   public createChild(meta: object): NodeLogger {
