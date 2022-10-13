@@ -1,9 +1,7 @@
-import { Meta } from '../../interfaces/meta.interface';
-
 export class BaseStream {
-  protected readonly _meta: Meta;
+  protected _meta: object;
 
-  constructor(meta: Meta) {
+  constructor(meta: object) {
     this._meta = meta;
   }
 
@@ -18,6 +16,13 @@ export class BaseStream {
     };
   }
 
+  public setLogMeta(meta: object) {
+    this._meta = {
+      ...this._meta,
+      ...meta,
+    };
+  }
+
   protected _map(record: any): any {
     const { msg, level, __meta, ...rest } = record;
 
@@ -28,7 +33,7 @@ export class BaseStream {
       msg,
       level_number: level,
       ...__meta,
-      ...this._meta.get('log-meta'),
+      ...this._meta['log-meta'],
     };
   }
 

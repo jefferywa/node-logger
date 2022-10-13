@@ -1,7 +1,6 @@
 import * as Gelf from 'gelf';
 
 import { LoggerSettings } from '../../interfaces/logger.interface';
-import { Meta } from '../../interfaces/meta.interface';
 
 import { BaseStream } from './base.stream';
 
@@ -9,9 +8,9 @@ export class GelfStream extends BaseStream {
   private readonly _gelf: Gelf;
 
   protected readonly _options: LoggerSettings;
-  protected readonly _meta: Meta;
+  protected readonly _meta: object;
 
-  constructor(meta: Meta, options: LoggerSettings) {
+  constructor(meta: object, options: LoggerSettings) {
     super(meta);
 
     this._gelf = new Gelf(options.gelfConfig);

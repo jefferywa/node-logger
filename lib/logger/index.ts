@@ -1,14 +1,15 @@
 import * as Bunyan from 'bunyan';
 import { LogLevel } from 'bunyan';
 
-import { v4 as uuidV4 } from 'uuid';
-import { Meta } from '../interfaces/meta.interface';
-import { LoggerSettings, LoggerOptions } from '../interfaces/logger.interface';
-import { TrimStream } from './stream/trim.stream';
-import { MapperStream } from './stream/mapper.stream';
-import { BaseStream } from './stream/base.stream';
 import { Timer } from '../timer';
+import { v4 as uuidV4 } from 'uuid';
+
+import { LoggerSettings, LoggerOptions } from '../interfaces/logger.interface';
+
+import { TrimStream } from './stream/trim.stream';
+import { BaseStream } from './stream/base.stream';
 import { GelfStream } from './stream/gelf.stream';
+import { MapperStream } from './stream/mapper.stream';
 
 const HEADER_RM_REGEX = /(rm=).+?(;|$)/g;
 const HEADER_SID_REGEX = /(sid=).+?(;|$)/g;
@@ -25,8 +26,9 @@ export class NodeLogger extends Bunyan {
   protected static readonly DEFAULT_LEVEL = 'INFO';
 
   protected readonly _settings: LoggerSettings;
-  protected readonly _meta: Meta;
+  protected readonly _meta: object;
 
+  public streams: any[];
   public middleware: (req, res, next) => void;
   public middlewareSuccessfulShortResponse: (req, res, next) => void;
   public middlewareSuccessfulResponse: (req, res, next) => void;
@@ -36,9 +38,10 @@ export class NodeLogger extends Bunyan {
     settingsOrParent: LoggerSettings | NodeLogger,
     options?: LoggerOptions,
   ) {
+    const meta = {};
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    super(NodeLogger._init(settingsOrParent), options);
+    super(NodeLogger._init(settingsOrParent, meta), options);
 
     if (settingsOrParent instanceof NodeLogger) {
       this._settings = settingsOrParent.settings;
@@ -46,7 +49,7 @@ export class NodeLogger extends Bunyan {
       this._settings = settingsOrParent;
     }
 
-    this._meta = NodeLogger._initMeta();
+    this._meta = meta;
   }
 
   get name(): string {
@@ -59,6 +62,10 @@ export class NodeLogger extends Bunyan {
 
   get settings(): LoggerSettings {
     return this._settings;
+  }
+
+  get meta(): object {
+    return this._meta;
   }
 
   static get Serializers() {
@@ -118,8 +125,13 @@ export class NodeLogger extends Bunyan {
   }
 
   public createChild(meta: object): NodeLogger {
-    this.setLogMeta(meta);
-    return <NodeLogger>this.child({ __meta: meta }, false);
+    const child = <NodeLogger>this.child({ __meta: meta }, false);
+
+    child.flushStreams();
+    const childSettings = NodeLogger._init(child.settings, meta);
+
+    childSettings.streams.forEach((stream) => child.addStream(stream));
+    return child;
   }
 
   public static create(settings: LoggerSettings): NodeLogger {
@@ -229,20 +241,25 @@ export class NodeLogger extends Bunyan {
     return false;
   }
 
+  public flushStreams(): void {
+    this.streams = [];
+  }
+
   public setLogMeta(meta: object): void {
-    this._meta.set('log-meta', meta);
+    this._meta['log-meta'] = meta;
+
+    this.streams.forEach(({ stream }) => stream.setLogMeta(this._meta));
   }
 
   private static _init(
     settings: LoggerSettings | NodeLogger,
+    meta: object,
   ): LoggerOptions | NodeLogger {
     if (settings instanceof NodeLogger) {
       return settings;
     }
 
-    const meta = this._initMeta();
     const streamList = [];
-
     const level = settings.level || NodeLogger.DEFAULT_LEVEL;
 
     let serializerList = NodeLogger.Serializers;
@@ -267,6 +284,7 @@ export class NodeLogger extends Bunyan {
     }
 
     return {
+      ...settings,
       name: settings.name || NodeLogger.DEFAULT_NAME_AND_TYPE,
       type: settings.type || NodeLogger.DEFAULT_NAME_AND_TYPE,
       streams: streamList,
@@ -274,18 +292,9 @@ export class NodeLogger extends Bunyan {
     };
   }
 
-  private static _initMeta(): Meta {
-    const emptyMetaObject = {};
-
-    return {
-      get: (key: string) => emptyMetaObject[key],
-      set: (key: string, value: any) => (emptyMetaObject[key] = value),
-    };
-  }
-
   private static _createStream(
     settings: LoggerSettings,
-    meta: Meta,
+    meta: object,
   ): TrimStream | MapperStream | GelfStream {
     if (settings.isTrim) {
       return new TrimStream(meta, settings);

@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 
-import { Meta } from '../../interfaces/meta.interface';
 import { LoggerSettings } from '../../interfaces/logger.interface';
 
 import { BaseStream } from './base.stream';
@@ -8,12 +7,19 @@ import { BaseStream } from './base.stream';
 export class MapperStream {
   private readonly DEFAULT_WRITE_MODE = 'STDOUT';
 
-  protected readonly _meta: Meta;
+  protected _meta: object;
   protected readonly _options: LoggerSettings;
 
-  constructor(meta: Meta, options: LoggerSettings) {
+  constructor(meta: object, options: LoggerSettings) {
     this._options = options;
     this._meta = meta;
+  }
+
+  public setLogMeta(meta: object) {
+    this._meta = {
+      ...this._meta,
+      ...meta,
+    };
   }
 
   protected _map(record: any): any {
@@ -30,8 +36,15 @@ export class MapperStream {
     } = record;
 
     let data;
-    if (Object.keys(rest).length) {
-      data = rest;
+    const restKeyList = Object.keys(rest);
+    if (restKeyList.length) {
+      data = restKeyList.reduce((result, key) => {
+        if (!this._options.hasOwnProperty(key)) {
+          result[key] = rest[key];
+        }
+
+        return result;
+      }, {});
     }
 
     return {
@@ -45,7 +58,7 @@ export class MapperStream {
       message: msg,
       data,
       ...__meta,
-      ...this._meta.get('log-meta'),
+      ...this._meta['log-meta'],
     };
   }
 

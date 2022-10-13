@@ -1,7 +1,9 @@
-import { LogLevelString } from 'bunyan';
+import { LogLevel, LogLevelString } from 'bunyan';
+
 import { BaseStream } from '../logger/stream/base.stream';
-import { MapperStream } from '../logger/stream/mapper.stream';
 import { TrimStream } from '../logger/stream/trim.stream';
+import { GelfStream } from '../logger/stream/gelf.stream';
+import { MapperStream } from '../logger/stream/mapper.stream';
 
 export interface GelfConfig {
   graylogPort: number;
@@ -11,12 +13,18 @@ export interface GelfConfig {
   maxChunkSizeLan: number;
 }
 
+export interface LoggerStream {
+  type: string;
+  level: LogLevel;
+  stream: BaseStream | TrimStream | MapperStream | GelfStream;
+}
+
 export interface LoggerSettings {
   name: string;
   type: string;
   mode?: string;
   path?: string;
-  level: LoggerLevels;
+  level: string | number;
   isTrim: boolean;
   isJSON: boolean;
   isGelf: boolean;
@@ -24,11 +32,9 @@ export interface LoggerSettings {
   gelfConfig?: GelfConfig;
   maxMessageLength?: number;
   serializers: object;
-  streams?: (BaseStream | MapperStream | TrimStream)[];
+  streams?: LoggerStream[];
 }
 
 export interface LoggerOptions {
   [key: string]: any;
 }
-
-export type LoggerLevels = LogLevelString | Uppercase<LogLevelString> | number;
