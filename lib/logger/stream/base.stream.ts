@@ -1,7 +1,11 @@
+import { LoggerSettings } from '../../interfaces/logger.interface';
+
 export class BaseStream {
   protected _meta: object;
+  protected readonly _options: LoggerSettings;
 
-  constructor(meta: object) {
+  constructor(meta: object, options: LoggerSettings) {
+    this._options = options;
     this._meta = meta;
   }
 
@@ -24,11 +28,25 @@ export class BaseStream {
   }
 
   protected _map(record: any): any {
-    const { msg, level, __meta, ...rest } = record;
+    const { name, type, msg, level, __meta, ...rest } = record;
+
+    let data;
+    const restKeyList = Object.keys(rest);
+    if (restKeyList.length) {
+      data = restKeyList.reduce((result, key) => {
+        if (!this._options.hasOwnProperty(key)) {
+          result[key] = rest[key];
+        }
+
+        return result;
+      }, {});
+    }
 
     return {
       '@timestamp': new Date(),
-      ...rest,
+      ...data,
+      name,
+      type,
       level: BaseStream.Levels[level],
       msg,
       level_number: level,

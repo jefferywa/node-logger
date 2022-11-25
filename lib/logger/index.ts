@@ -144,14 +144,13 @@ export class NodeLogger extends Bunyan {
       let requestId = req.headers['x-request-id'];
       if (!requestId) {
         requestId = uuidV4();
-
-        res.setHeader('x-request-id', requestId);
       }
+
+      res.setHeader('x-request-id', requestId);
 
       const meta = { requestId };
 
       req.requestId = requestId;
-
       req.log = logger.createChild(meta);
       req.log.json({ req }, this.INCOMING_REQUEST_POSTFIX);
 
@@ -279,7 +278,7 @@ export class NodeLogger extends Bunyan {
       streamList.push({
         type: NodeLogger.DEFAULT_STREAM_TYPE,
         level: level,
-        stream: new BaseStream(meta),
+        stream: new BaseStream(meta, settings),
       });
     }
 

@@ -11,7 +11,7 @@ export class GelfStream extends BaseStream {
   protected readonly _meta: object;
 
   constructor(meta: object, options: LoggerSettings) {
-    super(meta);
+    super(meta, options);
 
     this._gelf = new Gelf(options.gelfConfig);
     this._options = options;

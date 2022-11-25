@@ -16,7 +16,7 @@ const logger = Logger.create({
   isTrim: false,
   isJSON: true,
   isGelf: false,
-  isMapper: true,
+  isMapper: false,
   gelfConfig: undefined,
   maxMessageLength: 256,
   serializers: undefined,
