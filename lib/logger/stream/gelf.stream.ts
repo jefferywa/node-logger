@@ -2,9 +2,9 @@ import * as Gelf from 'gelf';
 
 import { LoggerSettings } from '../../interfaces/logger.interface';
 
-import { BaseStream } from './base.stream';
+import { MapperStream } from './mapper.stream';
 
-export class GelfStream extends BaseStream {
+export class GelfStream extends MapperStream {
   private readonly _gelf: Gelf;
 
   protected readonly _options: LoggerSettings;
