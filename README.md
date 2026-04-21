@@ -1,4 +1,5 @@
-# README #
+# README
+
 Simple runtime logging library based on [bunyan](https://www.npmjs.com/package/bunyan)
 
 [![npm](https://img.shields.io/npm/v/@jefferywa/node-logger)](https://www.npmjs.com/package/@jefferywa/node-logger)
@@ -8,7 +9,8 @@ Simple runtime logging library based on [bunyan](https://www.npmjs.com/package/b
 [![NPM](https://nodei.co/npm/@jefferywa/node-logger.png?downloads=true&compact=true)](https://nodei.co/npm/%40jefferywa%2Fnode-logger?)
 
 ## Quick Start
-The recommended use of `NodeLogger` is to create a singleton logger instance when the server application is initialized. 
+
+The recommended use of `NodeLogger` is to create a singleton logger instance when the server application is initialized.
 The easiest way to do this is to use the static `Logger.create` method, passing the `settings` object into it.
 
 ```typescript
@@ -23,6 +25,7 @@ const logger = Logger.create({}); // Your logger instance
 ## Logging
 
 ### Logging levels
+
 The values for the levels are taken from the Bunyan library and extended with a `Z` value (for JSON logging)
 
 ```typescript
@@ -37,12 +40,13 @@ const levels = {
 ```
 
 ### Creating your Logger instance
+
 You get started by creating a logger using Logger.create:
 
 ```typescript
 const logger = Logger.create({
   name: 'EXAMPLE_PROJECT_NAME', // - Write your project name
-  type: 'backend', // - Write your project type, for example `backend` or `api` 
+  type: 'backend', // - Write your project type, for example `backend` or `api`
   level: 'INFO', // - Write default logger level, in default settings it is INFO
   serializers: {
     // Your serializers
@@ -63,10 +67,10 @@ const logger = Logger.create({
     ...
   },
   maxMessageLength: 256, // - Write maximum log row length, this setting worked with field `isTrim`
-  isTrim: true, // - If set to `true`, will enable the `Trim` mode using the `maxMessageLength` parameter, this setting working with setting 'isMapper=true' 
+  isTrim: true, // - If set to `true`, will enable the `Trim` mode using the `maxMessageLength` parameter, this setting working with setting 'isMapper=true'
   isMapper: false, // If set to `true`, Mapper mode will be enabled, for a more detailed listing of the value in the entry log line
   isJSON: true, //  If set to `true`, `logger.json` method support will be enabled, by default `false`
-  isGelf: false, // If set to `true`, logs will be sent to graylog via gelf, this setting working with setting 'isMapper=true' 
+  isGelf: false, // If set to `true`, logs will be sent to graylog via gelf, this setting working with setting 'isMapper=true'
   gelfConfig: {
     graylogPort: 12201,
     graylogHostname: '127.0.0.1',
@@ -78,6 +82,7 @@ const logger = Logger.create({
 ```
 
 ### Serializers
+
 Configuration object containing functions that you can use in logging mods such as info and error
 
 ```typescript
@@ -99,10 +104,22 @@ You can merge or override these in the `settings.serializers` object when callin
 logger.info('Your info log string'); // For logging string value
 // {"@timestamp":"2022-08-12T15:15:30.999Z","name":"EXAMPLE_PROJECT_NAME","type":"backend","hostname":"notebook.local","pid":18585,"time":"2022-08-12T15:15:30.999Z","v":0,"level":"I","msg":"Your info log string","level_number":30}
 
-logger.json({stringData: {data: {message: 'your data'}}}, 'Your log string'); // For logging json values
+logger.json(
+  { stringData: { data: { message: 'your data' } } },
+  'Your log string',
+); // For logging json values
 // {"@timestamp":"2022-08-12T15:15:30.999Z","name":"example","type":"example","hostname":"notebook.local","pid":18585,"stringData":"{\"data\":{\"message\":\"your data\"}}","time":"2022-08-12T15:15:30.999Z","v":0,"level":"Z","msg":"Your log string","level_number":70}
 
-logger.error({err: {name: 'Error', message: 'Error message', stack: "Error: Error message stack trace" }}, 'Your error log string'); // For logging errors
+logger.error(
+  {
+    err: {
+      name: 'Error',
+      message: 'Error message',
+      stack: 'Error: Error message stack trace',
+    },
+  },
+  'Your error log string',
+); // For logging errors
 // {"@timestamp":"2022-08-14T17:01:24.499Z","name":"example","type":"example","hostname":"notebook.local","pid":18585,"err":{"message":"\"Error message\"","name":"Error","stack":"Error: Error message stack trace"},"time":"2022-08-14T17:01:24.498Z","v":0,"level":"E","msg":"Your error log string","level_number":50}
 
 logger.warn('Your warning log string'); // For logging warnings
