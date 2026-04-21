@@ -246,4 +246,26 @@ describe('Nest compatibility contract', () => {
     logger.setLogMeta({ requestId: 'req-from-test' });
     expect(logger.meta['log-meta']?.requestId).toBe('req-from-test');
   });
+
+  it('exposes Bunyan fields.__meta after Logger.create so bootstrap can read processId / requestId', () => {
+    const logger = Logger.create({
+      name: 'boot',
+      type: 'boot',
+      level: 'INFO',
+      isTrim: false,
+      isJSON: true,
+      isGelf: false,
+      isMapper: false,
+    });
+    expect(logger.fields.__meta).toBeDefined();
+    expect(
+      typeof (logger.fields.__meta as { processId?: string }).processId,
+    ).toBe('string');
+    expect(() =>
+      logger.setLogMeta({
+        serviceId: 'from-config',
+        requestId: (logger.fields.__meta as { requestId?: string }).requestId,
+      }),
+    ).not.toThrow();
+  });
 });

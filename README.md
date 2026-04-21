@@ -152,6 +152,12 @@ Published typings live under `dist/types` and are referenced from the `exports` 
 
 Install [`@types/bunyan`](https://www.npmjs.com/package/@types/bunyan) only if you type **raw Bunyan APIs** or third-party code that expects DefinitelyTyped’s `bunyan` shapes beyond this library’s surface.
 
+### Bunyan `fields.__meta` and `Logger.meta`
+
+After **`Logger.create()`**, Bunyan attaches per-logger defaults on **`logger.fields`**, including **`fields.__meta`** (for example **`processId`** from the internal child logger). You may read optional values with optional chaining, e.g. `logger.fields.__meta?.requestId`, before any HTTP middleware runs.
+
+Application-level metadata (including **`log-meta`**) is managed through **`setLogMeta()`** and the **`logger.meta`** getter, which combines Bunyan’s `fields.__meta` with the internal `log-meta` map. Prefer **`logger.meta['log-meta']?.requestId`** when you rely on `setLogMeta`; use **`fields.__meta`** when you need Bunyan’s child fields (such as **`processId`**) directly.
+
 #### Author: [JefferyWa (Vsevolod Golubinov)](https://github.com/jefferywa)
 
 ## NestJS compatibility

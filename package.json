@@ -1,6 +1,6 @@
 {
   "name": "@jefferywa/node-logger",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Bunyan runtime logger with output to stdout and files in JSON format",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -17,6 +17,9 @@
       "import": "./dist/esm/nest.js"
     },
     "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist",
@@ -50,7 +53,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:Jefferywa/node-logger.git"
+    "url": "git+ssh://git@github.com/Jefferywa/node-logger.git"
   },
   "dependencies": {
     "bunyan": "1.8.15",

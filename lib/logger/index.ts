@@ -48,8 +48,10 @@ export class NodeLogger extends Bunyan {
   protected static readonly DEFAULT_STREAM_TYPE = DEFAULT_STREAM_TYPE;
   protected static readonly DEFAULT_LEVEL = DEFAULT_LEVEL;
 
-  protected readonly _settings: LoggerSettings;
-  protected readonly _meta: RecordLikeInterface;
+  /** Set in constructor (root or Bunyan child via `Reflect.construct`). */
+  protected _settings!: LoggerSettings;
+  /** Internal bag for `setLogMeta`; merged into `meta` getter with Bunyan `fields.__meta`. */
+  protected _meta!: RecordLikeInterface;
 
   declare public streams: LoggerStreamEntryInterface[];
   public middleware!: (
@@ -74,21 +76,38 @@ export class NodeLogger extends Bunyan {
     next: NextFunctionInterface,
   ) => void;
 
+  /**
+   * Root: `new NodeLogger(settings)` → `super(_init(settings, meta))`.
+   * Child: Bunyan calls `new NodeLogger(parent, childFields, simple)` from `.child()`.
+   * `@types/bunyan` only types the 1-arg ctor, so we invoke Bunyan’s real 3-arg constructor via
+   * `Reflect.construct` (same runtime as `super(parent, opts, simple)`) and return that instance.
+   */
   constructor(
     settingsOrParent: LoggerSettings | NodeLogger,
-    _options?: BunyanLoggerOptionsInterface,
+    childOptions?: BunyanLoggerOptionsInterface,
+    childSimple?: boolean,
   ) {
-    const meta: RecordLikeInterface = {};
-    super(
-      NodeLogger._init(settingsOrParent, meta) as BunyanLoggerOptionsInterface,
-    );
-
-    if (settingsOrParent instanceof NodeLogger) {
-      this._settings = settingsOrParent.settings;
-    } else {
-      this._settings = settingsOrParent;
+    if (settingsOrParent instanceof NodeLogger && childOptions !== undefined) {
+      const instance = Reflect.construct(
+        Bunyan,
+        [settingsOrParent, childOptions, childSimple],
+        new.target,
+      ) as NodeLogger;
+      instance._settings = settingsOrParent.settings;
+      // Separate from Bunyan `fields.__meta`: `setLogMeta` adds `log-meta` here only.
+      instance._meta = {};
+      return instance;
     }
 
+    const meta: RecordLikeInterface = {};
+    super(
+      NodeLogger._init(
+        settingsOrParent as LoggerSettings,
+        meta,
+      ) as BunyanLoggerOptionsInterface,
+    );
+
+    this._settings = settingsOrParent as LoggerSettings;
     this._meta = meta;
   }
 
@@ -105,7 +124,15 @@ export class NodeLogger extends Bunyan {
   }
 
   get meta(): NodeLoggerMeta {
-    return this._meta as NodeLoggerMeta;
+    const fromBunyan =
+      typeof this.fields === 'object' &&
+      this.fields !== null &&
+      '__meta' in this.fields
+        ? ((this.fields as Record<string, unknown>)[
+            '__meta'
+          ] as RecordLikeInterface)
+        : {};
+    return { ...fromBunyan, ...this._meta } as NodeLoggerMeta;
   }
 
   static get Serializers() {
