@@ -1,5 +1,8 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["**/*"],
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "compilerOptions": {
+    "noEmit": false
+  },
+  "include": ["index.ts", "nest.ts", "lib/**/*.ts"],
+  "exclude": ["node_modules", "tests", "dist", "**/*.spec.ts"]
 }

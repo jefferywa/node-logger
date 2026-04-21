@@ -1,0 +1,34 @@
+[
+  {
+    "req": {
+      "headers": {
+        "x-request-id": "req-error"
+      }
+    },
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "Z",
+    "msg": "INCOMING_REQUEST",
+    "level_number": 70,
+    "requestId": "req-error"
+  },
+  {
+    "secureJsonData": {
+      "error": {
+        "code": 422,
+        "name": "ValidationError",
+        "message": "validation failed"
+      },
+      "meta": {
+        "requestId": "req-error",
+        "time": 8
+      }
+    },
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "Z",
+    "msg": "EXCEPTION_RESPONSE",
+    "level_number": 70,
+    "requestId": "req-error"
+  }
+]

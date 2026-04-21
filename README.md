@@ -1,9 +1,9 @@
 # README #
 Simple runtime logging library based on [bunyan](https://www.npmjs.com/package/bunyan)
 
-[![Version npm](https://img.shields.io/badge/npm-v2.0.0-blue)](https://www.npmjs.com/package/@jefferywa/node-logger)
-[![Version git](https://img.shields.io/badge/github-code-brighthgreen)](https://github.com/jefferywa/node-logger)
-[![Version git](https://img.shields.io/badge/gitgub-issues-red)](https://github.com/jefferywa/node-logger/issues)
+[![npm](https://img.shields.io/npm/v/@jefferywa/node-logger)](https://www.npmjs.com/package/@jefferywa/node-logger)
+[![GitHub](https://img.shields.io/badge/github-code-brightgreen)](https://github.com/jefferywa/node-logger)
+[![Issues](https://img.shields.io/badge/github-issues-red)](https://github.com/jefferywa/node-logger/issues)
 
 [![NPM](https://nodei.co/npm/@jefferywa/node-logger.png?downloads=true&compact=true)](https://nodei.co/npm/%40jefferywa%2Fnode-logger?)
 
@@ -81,40 +81,17 @@ const logger = Logger.create({
 Configuration object containing functions that you can use in logging mods such as info and error
 
 ```typescript
-// Default serializers
+import { Logger } from '@jefferywa/node-logger';
+
+// Same functions the library uses when you rely on built-in defaults
 const serializers = {
-  header: (headers) => {
-    const headerList = { ...headers };
-
-    if (headerList.cookie) {
-      headerList.cookie = headerList.cookie
-        .replace(HEADER_SID_REGEX, HEADER_REPLACE_PATTERN)
-        .replace(HEADER_RM_REGEX, HEADER_REPLACE_PATTERN);
-    }
-
-    if (headerList.authorization) {
-      headerList.authorization = HEADER_AUTHORIZATION_PATTERN;
-    }
-
-    return headerList;
-  },
-  req: (request) => {
-    return {
-      url: request.url,
-      method: request.method,
-      headers: NodeLogger.Serializers.header(request.headers),
-    };
-  },
-  err: (err) => {
-    return {
-      name: err.name,
-      message: JSON.stringify(err.message),
-      stack: err.stack,
-    };
-  },
+  header: Logger.Serializers.header,
+  req: Logger.Serializers.req,
+  err: Logger.Serializers.err,
 };
 ```
-You can also extend the set of these functions through the settings object, as shown above in the creation of a logger instance
+
+You can merge or override these in the `settings.serializers` object when calling `Logger.create`, as shown above.
 
 ### Logger methods
 
@@ -125,7 +102,7 @@ logger.info('Your info log string'); // For logging string value
 logger.json({stringData: {data: {message: 'your data'}}}, 'Your log string'); // For logging json values
 // {"@timestamp":"2022-08-12T15:15:30.999Z","name":"example","type":"example","hostname":"notebook.local","pid":18585,"stringData":"{\"data\":{\"message\":\"your data\"}}","time":"2022-08-12T15:15:30.999Z","v":0,"level":"Z","msg":"Your log string","level_number":70}
 
-logger.error({err: {name: 'Error', message: 'Error message', stack: "Error: Error message stack trace" }}, 'Your error log string'); // For loggin errors
+logger.error({err: {name: 'Error', message: 'Error message', stack: "Error: Error message stack trace" }}, 'Your error log string'); // For logging errors
 // {"@timestamp":"2022-08-14T17:01:24.499Z","name":"example","type":"example","hostname":"notebook.local","pid":18585,"err":{"message":"\"Error message\"","name":"Error","stack":"Error: Error message stack trace"},"time":"2022-08-14T17:01:24.498Z","v":0,"level":"E","msg":"Your error log string","level_number":50}
 
 logger.warn('Your warning log string'); // For logging warnings
@@ -135,22 +112,73 @@ logger.warn('Your warning log string'); // For logging warnings
 ```
 
 ## Installation
-``` bash
+
+Requires **Node.js 20+** (see `engines` in `package.json`).
+
+```bash
 npm install @jefferywa/node-logger
 ```
 
-``` bash
+```bash
 yarn add @jefferywa/node-logger
 ```
 
-### TypeScript support
-``` bash
-npm install @types/bunyan
-```
+### Runtime dependencies (consumer footprint)
 
-``` bash
-yarn add @types/bunyan
-```
+The package adds only **two** runtime dependencies to your app: [`bunyan`](https://www.npmjs.com/package/bunyan) and [`gelf`](https://www.npmjs.com/package/gelf). Identifiers such as `processId` and request IDs use **`node:crypto`** (`randomUUID`), not a separate `uuid` package.
 
+Optional: [`@nestjs/common`](https://www.npmjs.com/package/@nestjs/common) is an **optional peer** — install it only if you import `@jefferywa/node-logger/nest`.
+
+### TypeScript
+
+Published typings live under `dist/types` and are referenced from the `exports` map, so you get types for `Logger`, settings, and the `./nest` entry without extra setup.
+
+Install [`@types/bunyan`](https://www.npmjs.com/package/@types/bunyan) only if you type **raw Bunyan APIs** or third-party code that expects DefinitelyTyped’s `bunyan` shapes beyond this library’s surface.
 
 #### Author: [JefferyWa (Vsevolod Golubinov)](https://github.com/jefferywa)
+
+## NestJS compatibility
+
+The package keeps the original API and also provides optional NestJS adapters.
+
+```typescript
+import {
+  NODE_LOGGER,
+  NODE_LOGGER_SETTINGS,
+  NEST_LOGGER_SERVICE,
+  NestLoggerService,
+  NodeLoggerModule,
+  type NodeLoggerModuleAsyncOptions,
+} from '@jefferywa/node-logger/nest';
+```
+
+`@nestjs/common` is an optional peer dependency and is only required when you use the `@jefferywa/node-logger/nest` entrypoint.
+
+## Development
+
+- Runtime target: Node.js 20+ (see `.nvmrc` for a concrete version hint)
+- TypeScript toolchain: TypeScript 6
+- Changes are summarized in [CHANGELOG.md](CHANGELOG.md)
+- On GitHub, **CI** runs `npm run quality` on pushes and pull requests to `master` / `main`
+
+Useful commands:
+
+```bash
+npm run quality
+npm run build
+npm run check:circular
+npm run check:circular:verbose
+npm run test:comparative
+```
+
+Comparative tests (`tests/comparative.spec.ts`) validate current output against fixed baseline fixtures from the legacy behavior.
+
+## Git hooks
+
+Project uses `husky` and includes:
+
+- `.husky/pre-commit` -> runs `npm run eslint:fix`, `npm run prettier:fix`, `git add .`
+- `.husky/pre-push` -> runs `npm install`, then `npm run quality` (lint, typecheck, circular dependency check, tests, build)
+- `.husky/post-commit` -> runs `git update-index --again`
+
+This blocks push when lint, types, circular dependencies, tests, or build fail.

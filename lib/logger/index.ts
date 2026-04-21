@@ -1,47 +1,87 @@
-import * as Bunyan from 'bunyan';
+import Bunyan from 'bunyan';
 import { LogLevel } from 'bunyan';
 
-import { Timer } from '../timer';
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
-import { LoggerSettings, LoggerOptions } from '../interfaces/logger.interface';
+import {
+  LoggerSettings,
+  BunyanLoggerOptionsInterface,
+  NodeLoggerMeta,
+} from '../interfaces/logger.interface';
+import { RecordLikeInterface } from '../interfaces/record-like.interface';
+import { LoggerStreamEntryInterface } from './interfaces/logger-stream-entry.interface';
+import {
+  LoggerErrorInterface,
+  MiddlewareRequestInterface,
+  MiddlewareResponseInterface,
+  NextFunctionInterface,
+} from './interfaces/middleware.interface';
+import {
+  DEFAULT_LEVEL,
+  DEFAULT_NAME_AND_TYPE,
+  DEFAULT_STREAM_TYPE,
+  EXCEPTION_RESPONSE_POSTFIX,
+  INCOMING_REQUEST_POSTFIX,
+  SUCCESSFUL_RESPONSE_POSTFIX,
+} from './constants';
+import { createSerializers } from './serializers';
+import {
+  createExceptionResponseMiddleware,
+  createIncomingRequestMiddleware,
+  createSuccessfulResponseMiddleware,
+  createSuccessfulShortResponseMiddleware,
+} from './middleware.factory';
 
 import { TrimStream } from './stream/trim.stream';
 import { BaseStream } from './stream/base.stream';
 import { GelfStream } from './stream/gelf.stream';
 import { MapperStream } from './stream/mapper.stream';
 
-const HEADER_RM_REGEX = /(rm=).+?(;|$)/g;
-const HEADER_SID_REGEX = /(sid=).+?(;|$)/g;
-const HEADER_REPLACE_PATTERN = '$1***$2';
-const HEADER_AUTHORIZATION_PATTERN = '***';
-
 export class NodeLogger extends Bunyan {
-  protected static readonly INCOMING_REQUEST_POSTFIX = 'INCOMING_REQUEST';
-  protected static readonly SUCCESSFUL_RESPONSE_POSTFIX = 'SUCCESSFUL_RESPONSE';
-  protected static readonly EXCEPTION_RESPONSE_POSTFIX = 'EXCEPTION_RESPONSE';
+  protected static readonly INCOMING_REQUEST_POSTFIX = INCOMING_REQUEST_POSTFIX;
+  protected static readonly SUCCESSFUL_RESPONSE_POSTFIX =
+    SUCCESSFUL_RESPONSE_POSTFIX;
+  protected static readonly EXCEPTION_RESPONSE_POSTFIX =
+    EXCEPTION_RESPONSE_POSTFIX;
 
-  protected static readonly DEFAULT_NAME_AND_TYPE = 'example';
-  protected static readonly DEFAULT_STREAM_TYPE = 'raw';
-  protected static readonly DEFAULT_LEVEL = 'INFO';
+  protected static readonly DEFAULT_NAME_AND_TYPE = DEFAULT_NAME_AND_TYPE;
+  protected static readonly DEFAULT_STREAM_TYPE = DEFAULT_STREAM_TYPE;
+  protected static readonly DEFAULT_LEVEL = DEFAULT_LEVEL;
 
   protected readonly _settings: LoggerSettings;
-  protected readonly _meta: object;
+  protected readonly _meta: RecordLikeInterface;
 
-  public streams: any[];
-  public middleware: (req, res, next) => void;
-  public middlewareSuccessfulShortResponse: (req, res, next) => void;
-  public middlewareSuccessfulResponse: (req, res, next) => void;
-  public middlewareExceptionResponse: (err, req, res, next) => void;
+  declare public streams: LoggerStreamEntryInterface[];
+  public middleware!: (
+    req: MiddlewareRequestInterface,
+    res: MiddlewareResponseInterface,
+    next: NextFunctionInterface,
+  ) => void;
+  public middlewareSuccessfulShortResponse!: (
+    req: MiddlewareRequestInterface,
+    res: MiddlewareResponseInterface,
+    next: NextFunctionInterface,
+  ) => void;
+  public middlewareSuccessfulResponse!: (
+    req: MiddlewareRequestInterface,
+    res: MiddlewareResponseInterface,
+    next: NextFunctionInterface,
+  ) => void;
+  public middlewareExceptionResponse!: (
+    err: LoggerErrorInterface,
+    req: MiddlewareRequestInterface,
+    res: MiddlewareResponseInterface,
+    next: NextFunctionInterface,
+  ) => void;
 
   constructor(
     settingsOrParent: LoggerSettings | NodeLogger,
-    options?: LoggerOptions,
+    _options?: BunyanLoggerOptionsInterface,
   ) {
-    const meta = {};
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    super(NodeLogger._init(settingsOrParent, meta), options);
+    const meta: RecordLikeInterface = {};
+    super(
+      NodeLogger._init(settingsOrParent, meta) as BunyanLoggerOptionsInterface,
+    );
 
     if (settingsOrParent instanceof NodeLogger) {
       this._settings = settingsOrParent.settings;
@@ -64,174 +104,70 @@ export class NodeLogger extends Bunyan {
     return this._settings;
   }
 
-  get meta(): object {
-    return this._meta;
+  get meta(): NodeLoggerMeta {
+    return this._meta as NodeLoggerMeta;
   }
 
   static get Serializers() {
-    return {
-      header: (headers) => {
-        const headerList = { ...headers };
-
-        if (headerList.cookie) {
-          headerList.cookie = headerList.cookie
-            .replace(HEADER_SID_REGEX, HEADER_REPLACE_PATTERN)
-            .replace(HEADER_RM_REGEX, HEADER_REPLACE_PATTERN);
-        }
-
-        if (headerList.authorization) {
-          headerList.authorization = HEADER_AUTHORIZATION_PATTERN;
-        }
-
-        return headerList;
-      },
-      req: (request) => {
-        return {
-          url: request.url,
-          method: request.method,
-          headers: NodeLogger.Serializers.header(request.headers),
-        };
-      },
-      err: (err) => {
-        return {
-          name: err.name,
-          message: JSON.stringify(err.message),
-          stack: err.stack,
-        };
-      },
-    };
+    return createSerializers();
   }
 
-  public json(args: any, ...rest: any) {
+  public json(args: unknown, ...rest: unknown[]): void {
     if (!this._settings.isJSON) {
       return;
     }
 
-    let newArgs;
+    let newArgs: [RecordLikeInterface, string?] = [{ level: 70 }];
     if (typeof args === 'string') {
       newArgs = [{ level: 70 }, args];
     }
 
     if (typeof args !== 'string') {
-      newArgs = [{ ...args, level: 70 }];
+      newArgs = [{ ...(args as RecordLikeInterface), level: 70 }];
     }
 
-    const concatArgs = newArgs.concat(rest);
+    const concatArgs = newArgs.concat(
+      rest as Array<string | RecordLikeInterface | undefined>,
+    );
     this.info(concatArgs[0], concatArgs[1]);
   }
 
-  public log(arg: any) {
+  public log(arg: unknown): void {
     this.info(arg);
   }
 
-  public createChild(meta: object): NodeLogger {
-    const child = <NodeLogger>this.child({ __meta: meta }, false);
+  public createChild(meta: RecordLikeInterface): NodeLogger {
+    const child = this.child({ __meta: meta }, false) as NodeLogger;
 
     child.flushStreams();
     const childSettings = NodeLogger._init(child.settings, meta);
 
-    childSettings.streams.forEach((stream) => child.addStream(stream));
+    (childSettings.streams as unknown as LoggerStreamEntryInterface[]).forEach(
+      (stream) => child.addStream(stream as unknown as Bunyan.Stream),
+    );
     return child;
   }
 
   public static create(settings: LoggerSettings): NodeLogger {
     const logger = new NodeLogger(settings).createChild({
-      processId: uuidV4(),
+      processId: randomUUID(),
     });
 
     logger.level(settings.level as LogLevel);
-    logger.middleware = (req, res, next) => {
-      let requestId = req.headers['x-request-id'];
-      if (!requestId) {
-        requestId = uuidV4();
-      }
-
-      res.setHeader('x-request-id', requestId);
-
-      const meta = { requestId };
-
-      req.requestId = requestId;
-      req.log = logger.createChild(meta);
-      req.log.json({ req }, this.INCOMING_REQUEST_POSTFIX);
-
-      next();
-    };
-
-    logger.middlewareSuccessfulShortResponse = (req, res, next) => {
-      if (!req.requestId || !req.timeStart) {
-        return next();
-      }
-
-      const time = Timer.hrtimeToMs(process.hrtime(req.timeStart));
-
-      req.log.json(
-        { secureJsonData: { code: 200, meta: { time } } },
-        this.SUCCESSFUL_RESPONSE_POSTFIX,
+    logger.middleware = createIncomingRequestMiddleware(
+      logger,
+      NodeLogger.INCOMING_REQUEST_POSTFIX,
+    );
+    logger.middlewareSuccessfulShortResponse =
+      createSuccessfulShortResponseMiddleware(
+        NodeLogger.SUCCESSFUL_RESPONSE_POSTFIX,
       );
-
-      next();
-    };
-
-    logger.middlewareSuccessfulResponse = (req, res, next) => {
-      if (!req.requestId || !req.timeStart) {
-        return next();
-      }
-
-      const time = Timer.hrtimeToMs(process.hrtime(req.timeStart));
-      if (!res.result && res.result !== null) {
-        return next();
-      }
-
-      if (res.result.stream) {
-        return next();
-      }
-
-      req.log.json(
-        {
-          secureJsonData: {
-            code: 200,
-            result: res.result,
-            meta: {
-              requestId: req.requestId,
-              time: time,
-            },
-          },
-        },
-        this.SUCCESSFUL_RESPONSE_POSTFIX,
-      );
-
-      next();
-    };
-
-    logger.middlewareExceptionResponse = (err, req, res, next) => {
-      if (!req.requestId || !req.timeStart) {
-        return next();
-      }
-
-      const time = Timer.hrtimeToMs(process.hrtime(req.timeStart));
-
-      const errorMessage = err.message.msg || err.message;
-      const errorCode = !err.statusCode ? 400 : err.statusCode;
-
-      req.log.json(
-        {
-          secureJsonData: {
-            error: {
-              code: errorCode,
-              name: err.name,
-              message: errorMessage,
-            },
-            meta: {
-              requestId: req.requestId,
-              time: time,
-            },
-          },
-        },
-        this.EXCEPTION_RESPONSE_POSTFIX,
-      );
-
-      next(err);
-    };
+    logger.middlewareSuccessfulResponse = createSuccessfulResponseMiddleware(
+      NodeLogger.SUCCESSFUL_RESPONSE_POSTFIX,
+    );
+    logger.middlewareExceptionResponse = createExceptionResponseMiddleware(
+      NodeLogger.EXCEPTION_RESPONSE_POSTFIX,
+    );
 
     return logger;
   }
@@ -244,26 +180,35 @@ export class NodeLogger extends Bunyan {
     this.streams = [];
   }
 
-  public setLogMeta(meta: object): void {
+  public setLogMeta(meta: RecordLikeInterface): void {
     this._meta['log-meta'] = meta;
 
-    this.streams.forEach(({ stream }) => stream.setLogMeta(this._meta));
+    this.streams.forEach(({ stream }) => {
+      (
+        stream as {
+          setLogMeta: (meta: RecordLikeInterface) => void;
+        }
+      ).setLogMeta(this._meta);
+    });
   }
 
   private static _init(
     settings: LoggerSettings | NodeLogger,
-    meta: object,
-  ): LoggerOptions | NodeLogger {
+    meta: RecordLikeInterface,
+  ): BunyanLoggerOptionsInterface | NodeLogger {
     if (settings instanceof NodeLogger) {
       return settings;
     }
 
-    const streamList = [];
-    const level = settings.level || NodeLogger.DEFAULT_LEVEL;
+    const streamList: unknown[] = [];
+    const level = (settings.level || NodeLogger.DEFAULT_LEVEL) as LogLevel;
 
     let serializerList = NodeLogger.Serializers;
     if (settings.serializers) {
-      serializerList = Object.assign(serializerList, settings.serializers);
+      serializerList = Object.assign(
+        serializerList,
+        settings.serializers as typeof serializerList,
+      );
     }
 
     if (settings.isMapper) {
@@ -288,12 +233,12 @@ export class NodeLogger extends Bunyan {
       type: settings.type || NodeLogger.DEFAULT_NAME_AND_TYPE,
       streams: streamList,
       serializers: serializerList,
-    };
+    } as BunyanLoggerOptionsInterface;
   }
 
   private static _createStream(
     settings: LoggerSettings,
-    meta: object,
+    meta: RecordLikeInterface,
   ): TrimStream | MapperStream | GelfStream {
     if (settings.isTrim) {
       return new TrimStream(meta, settings);

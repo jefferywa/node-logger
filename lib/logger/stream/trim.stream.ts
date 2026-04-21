@@ -1,4 +1,6 @@
 import { LoggerSettings } from '../../interfaces/logger.interface';
+import { MapperStreamRecordInterface } from './interfaces/mapper-stream-record.interface';
+import { LogMetaInterface } from './interfaces/log-meta.interface';
 
 import { MapperStream } from './mapper.stream';
 
@@ -6,9 +8,9 @@ export class TrimStream extends MapperStream {
   private readonly DEFAULT_MAX_MESSAGE_LENGTH = 1024;
 
   protected readonly _options: LoggerSettings;
-  protected readonly _meta: object;
+  protected readonly _meta: LogMetaInterface;
 
-  constructor(meta: object, options: LoggerSettings) {
+  constructor(meta: LogMetaInterface, options: LoggerSettings) {
     super(meta, options);
 
     this._meta = meta;
@@ -20,16 +22,20 @@ export class TrimStream extends MapperStream {
     };
   }
 
-  protected _map(record: any): any {
-    const { message, level, level_number: levelNumber, ...rest } = super._map(
-      record,
-    );
+  protected _map(record: MapperStreamRecordInterface): Record<string, unknown> {
+    const {
+      message,
+      level,
+      level_number: levelNumber,
+      ...rest
+    } = super._map(record);
 
     return {
       level: level,
       level_number: levelNumber,
       message:
-        message.length > this._options.maxMessageLength
+        typeof message === 'string' &&
+        message.length > (this._options.maxMessageLength ?? 0)
           ? message.slice(0, this._options.maxMessageLength).concat('...')
           : message,
       ...rest,

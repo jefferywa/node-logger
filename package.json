@@ -1,15 +1,52 @@
 {
   "name": "@jefferywa/node-logger",
-  "version": "2.4.4",
-  "description": "Banyan runtime logger with output to stdout and files in JSON format",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "3.0.0",
+  "description": "Bunyan runtime logger with output to stdout and files in JSON format",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
+    },
+    "./nest": {
+      "types": "./dist/types/nest.d.ts",
+      "require": "./dist/cjs/nest.js",
+      "import": "./dist/esm/nest.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "build": "tsc",
-    "format": "prettier '{.,lib}/**/*.ts' --write",
-    "lint": "eslint '{.,lib}/**/*.ts' --fix",
-    "flint": "npm run format && npm run lint",
-    "prepublish": "tsc"
+    "clean": "rimraf dist",
+    "build": "npm run clean && npm run build:types && npm run build:cjs && npm run build:esm",
+    "build:types": "tsc -p tsconfig.build.types.json",
+    "build:cjs": "tsc -p tsconfig.build.cjs.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prettier": "prettier \"{.,lib,tests}/**/*.ts\"",
+    "prettier:fix": "prettier \"{.,lib,tests}/**/*.ts\" --write",
+    "format": "prettier \"{.,lib,tests}/**/*.ts\" --write",
+    "lint": "eslint .",
+    "eslint:fix": "eslint . --fix",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:comparative": "vitest run tests/comparative.spec.ts",
+    "check:circular": "dpdm --exit-code circular:1 --warning=false index.ts nest.ts lib/**/*.ts",
+    "check:circular:verbose": "dpdm --exit-code circular:1 index.ts nest.ts lib/**/*.ts",
+    "quality": "npm run lint && npm run typecheck && npm run check:circular && npm run test && npm run build",
+    "pack:tarball": "npm run quality && npm pack",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -17,18 +54,30 @@
   },
   "dependencies": {
     "bunyan": "1.8.15",
-    "gelf": "2.0.1",
-    "uuid": "8.3.2"
+    "gelf": "2.0.1"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@nestjs/common": "^11.1.6",
     "@types/bunyan": "1.8.8",
-    "@typescript-eslint/eslint-plugin": "5.0.0",
-    "@typescript-eslint/parser": "5.0.0",
-    "eslint": "8.0.1",
-    "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-prettier": "4.0.0",
-    "prettier": "2.0.5",
-    "typescript": "4.3.5"
+    "@types/node": "^24.7.2",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "dpdm": "^4.0.1",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^6.0.0-dev.20260421",
+    "vitest": "^3.2.4"
   },
   "keywords": [
     "logger",

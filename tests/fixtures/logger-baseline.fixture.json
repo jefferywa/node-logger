@@ -1,0 +1,38 @@
+[
+  {
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "I",
+    "msg": "PARENT_LOG_1",
+    "level_number": 30
+  },
+  {
+    "req": {
+      "headers": {
+        "x-request-id": "req-1"
+      }
+    },
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "Z",
+    "msg": "INCOMING_REQUEST",
+    "level_number": 70,
+    "requestId": "req-1"
+  },
+  {
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "I",
+    "msg": "REQUEST_CHILD_LOG_2",
+    "level_number": 30,
+    "requestId": "req-1",
+    "custom": "REQUEST_CHILD_META"
+  },
+  {
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "I",
+    "msg": "PARENT_LOG_2",
+    "level_number": 30
+  }
+]

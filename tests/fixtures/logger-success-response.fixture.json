@@ -1,0 +1,33 @@
+[
+  {
+    "req": {
+      "headers": {
+        "x-request-id": "req-success"
+      }
+    },
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "Z",
+    "msg": "INCOMING_REQUEST",
+    "level_number": 70,
+    "requestId": "req-success"
+  },
+  {
+    "secureJsonData": {
+      "code": 200,
+      "result": {
+        "ok": true
+      },
+      "meta": {
+        "requestId": "req-success",
+        "time": 5
+      }
+    },
+    "name": "TEST_LOGGER_NAME",
+    "type": "TEST_LOGGER_TYPE",
+    "level": "Z",
+    "msg": "SUCCESSFUL_RESPONSE",
+    "level_number": 70,
+    "requestId": "req-success"
+  }
+]

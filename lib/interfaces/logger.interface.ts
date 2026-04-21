@@ -1,9 +1,13 @@
-import { LogLevel, LogLevelString } from 'bunyan';
+import { LogLevel } from 'bunyan';
+import { RecordLikeInterface } from './record-like.interface';
 
-import { BaseStream } from '../logger/stream/base.stream';
-import { TrimStream } from '../logger/stream/trim.stream';
-import { GelfStream } from '../logger/stream/gelf.stream';
-import { MapperStream } from '../logger/stream/mapper.stream';
+/**
+ * Metadata map on `NodeLogger.meta`. Explicit `log-meta` so consumers can use
+ * `meta['log-meta']?.requestId` without narrowing errors (backward compatible with loose DTOs).
+ */
+export type NodeLoggerMeta = RecordLikeInterface & {
+  'log-meta'?: RecordLikeInterface;
+};
 
 export interface GelfConfig {
   graylogPort: number;
@@ -16,7 +20,7 @@ export interface GelfConfig {
 export interface LoggerStream {
   type: string;
   level: LogLevel;
-  stream: BaseStream | TrimStream | MapperStream | GelfStream;
+  stream: unknown;
 }
 
 export interface LoggerSettings {
@@ -31,10 +35,11 @@ export interface LoggerSettings {
   isMapper: boolean;
   gelfConfig?: GelfConfig;
   maxMessageLength?: number;
-  serializers: object;
+  /** Bunyan serializer map; `unknown` keeps compatibility with configs typed as `object`. */
+  serializers?: unknown;
   streams?: LoggerStream[];
 }
 
-export interface LoggerOptions {
-  [key: string]: any;
+export interface BunyanLoggerOptionsInterface extends RecordLikeInterface {
+  name: string;
 }
