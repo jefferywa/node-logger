@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `check:circular` no longer prints the full dependency tree (`dpdm --tree=false`); use `check:circular:verbose` for the previous output.
+
+### Fixed
+
+- Transitive dev dependency advisories (`brace-expansion`, `lodash`) addressed via `npm audit fix` (lockfile).
+
 ## [3.0.0] - 2026-04-21
 
 Semver **major**: dual package layout, Node 20+, refreshed tooling, optional Nest entry, and TypeScript fixes for consumer compatibility.

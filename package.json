@@ -42,7 +42,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:comparative": "vitest run tests/comparative.spec.ts",
-    "check:circular": "dpdm --exit-code circular:1 --warning=false index.ts nest.ts lib/**/*.ts",
+    "check:circular": "dpdm --exit-code circular:1 --warning=false --tree=false index.ts nest.ts lib/**/*.ts",
     "check:circular:verbose": "dpdm --exit-code circular:1 index.ts nest.ts lib/**/*.ts",
     "quality": "npm run lint && npm run typecheck && npm run check:circular && npm run test && npm run build",
     "pack:tarball": "npm run quality && npm pack",
